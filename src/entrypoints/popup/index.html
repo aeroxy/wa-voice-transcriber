@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WA Voice Transcriber</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <h1>WA Voice Transcriber</h1>
+
+    <p class="count" id="count">Counting cached transcripts…</p>
+
+    <button id="clear" class="danger" disabled>Clear all transcripts</button>
+    <p class="note">
+      Removes only this extension's cached transcripts. WhatsApp's own messages
+      and media are never touched — every cleared transcript can be remade with
+      Transcribe.
+    </p>
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <p class="version" id="version"></p>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
