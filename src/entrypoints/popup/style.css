@@ -1,0 +1,61 @@
+/* Follows the browser's theme rather than picking one, the same reasoning as the
+   injected UI: this sits next to Chrome's own chrome, in whichever mode. */
+:root {
+  --bg: #ffffff;
+  --fg: #111b21;
+  --muted: #667781;
+  --line: #e9edef;
+  --accent: #1da851;
+  --danger: #b4232c;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111b21;
+    --fg: #e9edef;
+    --muted: #8696a0;
+    --line: #2a3942;
+    --accent: #25d366;
+    --danger: #f4767e;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 280px;
+  margin: 0;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+h1 {
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.count { margin: 0 0 12px; font-size: 13px; }
+.count strong { font-weight: 600; color: var(--accent); }
+
+button {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+button:hover:not([disabled]) { border-color: var(--danger); color: var(--danger); }
+button[disabled] { opacity: 0.45; cursor: default; }
+button.confirming { border-color: var(--danger); color: var(--danger); font-weight: 600; }
+
+.note { margin: 8px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.status { margin: 10px 0 0; font-size: 12px; min-height: 1.2em; color: var(--accent); }
+.version { margin: 12px 0 0; font-size: 10.5px; color: var(--muted); }
