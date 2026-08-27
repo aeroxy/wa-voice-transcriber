@@ -25,7 +25,6 @@ async function refresh(): Promise<void> {
     ? `<strong>${plural(n, 'transcript')}</strong> cached.`
     : 'No transcripts cached yet.'
   els.clear.disabled = n === 0
-  return
 }
 
 /**
@@ -54,7 +53,17 @@ els.clear.addEventListener('click', async () => {
   }
   armed = false
   els.clear.textContent = 'Clear all transcripts'
-  await refresh()
+
+  // Caught separately, and deliberately not folded into the block above: the
+  // clear either happened or it didn't, and re-reading the count afterwards is a
+  // different question. Letting it reject would leave the handler's promise
+  // unhandled and the count stale under a "Cleared …" message that was true.
+  try {
+    await refresh()
+  } catch (e) {
+    els.count.textContent = `Could not re-read storage: ${(e as Error).message}`
+    els.clear.disabled = true
+  }
 })
 
 els.version.textContent = `v${__VERSION__} · built ${__BUILD_TIME__.slice(0, 10)}`

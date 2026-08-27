@@ -22,6 +22,7 @@
     "test": "bun test"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.11.6",
     "@types/bun": "^1.4.0",
     "@types/chrome": "^0.0.287",
     "@typescript/native-preview": "^7.0.0-dev.20260605.1",
