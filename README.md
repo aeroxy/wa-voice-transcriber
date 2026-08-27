@@ -26,8 +26,13 @@ WhatsApp does have voice-message transcripts, but they are a *phone* feature: pe
 [WhatsApp's FAQ](https://faq.whatsapp.com/), you turn them on in the mobile app
 under Settings → Chats → Voice message transcripts, transcription runs on-device,
 it is off by default, and which languages work depends on the phone's OS. There
-is nothing to switch on in the browser. Whether a transcript made on the phone
-then shows up on Web is not something this repo has tested.
+is nothing to switch on in the browser.
+
+On the phone this extension was built alongside, that feature is unavailable —
+which is why the extension exists. Whether a transcript made on a phone that
+*can* transcribe then propagates to Web is therefore untested here: there was
+never one to propagate. If yours transcribes, check the Web client before
+installing this; you may need it less than the rest of this README assumes.
 
 It works on any voice note whose audio WhatsApp has already cached on this device
 and whose player this extension recognises in the page. Both caveats are real and
