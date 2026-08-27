@@ -89,6 +89,19 @@ and refuses them if they do not match the `filehash` they were looked up under.
 `filehash` is the SHA-256 of the decrypted file, so this is free to check and it
 keeps the wrong clip from ever reaching the recognizer.
 
+### The Transcribe button takes trusted clicks only
+
+`event.isTrusted` is checked before anything loads. The button is injected into
+WhatsApp's own DOM, so any script in the page can call `.click()` on it, and the
+worker behind it can POST to QuillBot — which the page itself cannot, because
+WhatsApp's `connect-src` CSP blocks it. Reading the cached audio is no privilege;
+a page script is same-origin with Cache Storage and can read it directly. Sending
+it to a third party is, and that is the bit worth gating.
+
+Note this costs a little testability: `element.click()` from a page context is
+untrusted, so driving the button from devtools needs a real input event
+(`Input.dispatchMouseEvent`) rather than `.click()`.
+
 ### Never create WhatsApp's storage either
 
 `indexedDB.open(name)` with no version *creates* a database that is not there, so
