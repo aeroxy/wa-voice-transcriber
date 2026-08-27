@@ -156,7 +156,16 @@ async function mount(playerRow: HTMLElement, messageId: string): Promise<void> {
   if (cached) showTranscript(output, cached)
   button.textContent = idleLabel()
 
-  button.addEventListener('click', async () => {
+  button.addEventListener('click', async (event) => {
+    // Only a real click. This button is injected into WhatsApp's own DOM, so any
+    // script in the page can call `.click()` on it — and the worker behind it is
+    // an egress path the page does not otherwise have, since WhatsApp's
+    // `connect-src` CSP blocks a page-context fetch to QuillBot. Reading the
+    // cached audio is no privilege (the page is same-origin with Cache Storage
+    // and can read it directly), but shipping it to a third party is, so the
+    // lever wants a hand on it.
+    if (!event.isTrusted) return
+
     button.disabled = true
     button.textContent = 'Transcribing…'
 
