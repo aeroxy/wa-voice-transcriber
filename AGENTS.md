@@ -89,6 +89,23 @@ and refuses them if they do not match the `filehash` they were looked up under.
 `filehash` is the SHA-256 of the decrypted file, so this is free to check and it
 keeps the wrong clip from ever reaching the recognizer.
 
+### Never create WhatsApp's storage either
+
+`indexedDB.open(name)` with no version *creates* a database that is not there, so
+`voice-media.ts` checks `indexedDB.databases()` before opening and aborts the
+version-change transaction if `onupgradeneeded` fires anyway. Planting an empty
+`model-storage` in front of WhatsApp's own is the same intrusion as clearing one.
+Do not drop either guard on the grounds that the database "is always there".
+
+### Locale-neutral selectors, English as fallback
+
+Clip discovery keys on `data-icon="ptt-status"` and `role="slider"`, not on
+aria-label text. The English labels remain as a *fallback* only, so a WhatsApp
+rename of `ptt-status` degrades to English-only rather than to nothing. Don't
+promote the labels back to primary, and don't delete the fallback — they cover
+different failure modes. `src/lib/clips.test.ts` pins both paths, including a
+German-interface case.
+
 ### Never clear WhatsApp's own storage
 
 `clearAll` touches only this extension's `transcript:` keys in

@@ -71,14 +71,38 @@ export function cacheKeyFor(filehash: string): string {
   return MEDIA_KEY_PREFIX + encodeURIComponent(filehash)
 }
 
-function open(): Promise<IDBDatabase> {
+/**
+ * Open WhatsApp's message database, and never create it.
+ *
+ * `indexedDB.open` with no version *creates* a database that is not there, which
+ * on this origin would mean planting an empty `model-storage` in front of
+ * WhatsApp's own. This extension is a read-only guest in WhatsApp's storage;
+ * conjuring one of its databases is the same intrusion as clearing one, so the
+ * name is checked against `indexedDB.databases()` first and a missing database is
+ * reported rather than made.
+ *
+ * `onupgradeneeded` is still handled, because the check above is a race, not a
+ * lock: WhatsApp could be mid-setup. It aborts the version-change transaction so
+ * the empty database it was about to create is rolled back instead of left
+ * behind.
+ */
+async function open(): Promise<IDBDatabase> {
+  const present = await indexedDB.databases()
+  if (!present.some((d) => d.name === DB_NAME)) {
+    throw new ClipUnavailable('WhatsApp’s message store isn’t ready on this page yet.')
+  }
+
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME)
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error ?? new Error('Could not open WhatsApp’s message store.'))
-    // A fresh `open` with no version would create the database if WhatsApp had
-    // not already — which would mean we are looking at the wrong page entirely.
-    req.onupgradeneeded = () => reject(new ClipUnavailable('WhatsApp’s message store is not ready yet.'))
+    req.onupgradeneeded = () => {
+      // Roll back rather than leave a half-made database of WhatsApp's behind.
+      // Aborting also fires onerror, and the first rejection is the one that
+      // counts, so the message below is what the caller sees.
+      req.transaction?.abort()
+      reject(new ClipUnavailable('WhatsApp’s message store isn’t ready on this page yet.'))
+    }
   })
 }
 

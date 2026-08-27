@@ -17,8 +17,14 @@
 
 WhatsApp ships voice-message transcription, but only for some accounts, some
 languages and some regions — and where it is absent it is *silently* absent.
-There is no control to press and no error to retry. This adds one that always
-works.
+There is no control to press and no error to retry. This adds one, and when it
+cannot transcribe a clip it says why.
+
+It works on any voice note whose audio WhatsApp has already cached on this device
+and whose player this extension recognises in the page. Both caveats are real and
+are spelled out under [Limits](#limits): a clip WhatsApp never downloaded has no
+local audio, and the player is located by DOM landmarks that a WhatsApp redesign
+could move.
 
 ## How it works
 
@@ -35,7 +41,7 @@ the byte-identical expired URL and fails the same way.
 notes, decrypts them in the page, and parks the plaintext Ogg/Opus in Cache
 Storage:
 
-```
+```text
 caches.open('lru-media-array-buffer-cache')
   .match('https://_media_cache_v2_.whatsapp.com/lru-media-array-buffer-cache_<filehash>')
 ```
@@ -122,6 +128,8 @@ decide whether that's acceptable before using this.
   IndexedDB and media cache are read-only to this extension and are never
   cleared — wiping them would damage the account's local state, and the
   transcripts are re-derivable anyway.
-- The player is found by the progress bar's `aria-label`, an English string.
-  WhatsApp's class names are generated, so there is no better landmark; a
-  non-English UI will need that selector adjusted.
+- The player is found by `data-icon="ptt-status"` and the `role="slider"`
+  progress bar, neither of which depends on the interface language. WhatsApp's
+  English `aria-label`s are kept only as a fallback for the case where
+  `ptt-status` is renamed or dropped — so a rename degrades to English-only
+  rather than to nothing.
