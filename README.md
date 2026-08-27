@@ -78,13 +78,14 @@ it — so the service worker exists to make that single call and nothing else.
 
 Every transcript keeps a **Retranscribe** control beneath it, which ignores the
 cache and asks again — useful when a short clip came back wrong. The toolbar icon
-opens a popup showing how many transcripts are cached, with a two-press **Clear
-all transcripts**.
+opens a popup with the **transcription timeout**, how many transcripts are
+cached, and a two-press **Clear all transcripts**.
 
 | File | Role |
 | --- | --- |
 | `src/entrypoints/whatsapp.content.ts` | Finds clips, injects the button, renders transcripts |
-| `src/entrypoints/popup/` | Cached-transcript count and Clear all |
+| `src/entrypoints/popup/` | Transcription timeout, cached count, Clear all |
+| `src/lib/settings.ts` | The request deadline, clamped to something usable |
 | `src/lib/voice-media.ts` | Message id → decrypted clip, out of WhatsApp's own cache |
 | `src/lib/clips.ts` | Voice-clip discovery in WhatsApp's markup |
 | `src/lib/transcript-store.ts` | Caches transcripts so scrolling doesn't lose them |
@@ -123,7 +124,11 @@ decide whether that's acceptable before using this.
   since its CDN URL has long expired there is no way back to it.
 - Language follows the browser's locale (`en-GB` → language `en`, dialect `GB`),
   falling back to `en`/`US`. A clip in another language will transcribe poorly.
-- No known size limit for the endpoint. Long voice notes are untested.
+- No known size limit for the endpoint. Long voice notes are untested — which is
+  why the request deadline is a setting rather than a constant. It defaults to 60
+  seconds and is adjustable from 10 to 600 in the popup: a long clip is a lot of
+  audio to upload and recognise, and no single value suits both that and failing
+  fast on a stalled request.
 - **Clear all** removes only this extension's cached transcripts. WhatsApp's own
   IndexedDB and media cache are read-only to this extension and are never
   cleared — wiping them would damage the account's local state, and the

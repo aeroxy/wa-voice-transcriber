@@ -45,27 +45,61 @@ export function splitLocale(locale: string | undefined): { language: string; dia
  * has to base64 it anyway to send it across `chrome.runtime.sendMessage`, which
  * serialises as JSON and would mangle an ArrayBuffer.
  */
-export async function transcribe(audioBase64: string, locale: string | undefined): Promise<string> {
+export async function transcribe(
+  audioBase64: string,
+  locale: string | undefined,
+  timeoutMs: number,
+): Promise<string> {
   const { language, dialect } = splitLocale(locale)
 
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      audioData: audioBase64,
-      // Kept at 'timestamp' to match what the endpoint's own callers send; the
-      // timestamps themselves are ignored, only `data.raw` is used.
-      mode: 'timestamp',
-      language,
-      dialect,
-    }),
-  })
+  // Without a deadline a stalled request never ends: nothing else in the chain
+  // has a timeout either, so the button sits on "Transcribing…" until the page
+  // is reloaded. `timedOut` rather than sniffing for `AbortError`, so only *our*
+  // abort is reported as a timeout.
+  const controller = new AbortController()
+  let timedOut = false
+  const deadline = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, timeoutMs)
 
-  if (!res.ok) {
-    throw new Error(`Transcription service returned HTTP ${res.status}.`)
+  let body: QuillBotResponse
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        audioData: audioBase64,
+        // Kept at 'timestamp' to match what the endpoint's own callers send; the
+        // timestamps themselves are ignored, only `data.raw` is used.
+        mode: 'timestamp',
+        language,
+        dialect,
+      }),
+      signal: controller.signal,
+    })
+
+    if (!res.ok) {
+      throw new Error(`Transcription service returned HTTP ${res.status}.`)
+    }
+
+    // Inside the deadline as well: a response whose body never finishes arriving
+    // hangs exactly as thoroughly as one that never starts.
+    body = (await res.json()) as QuillBotResponse
+  } catch (e) {
+    if (timedOut) {
+      throw new Error(
+        `Transcription timed out after ${Math.round(timeoutMs / 1000)}s. Try again, ` +
+          'or raise the timeout from the extension’s toolbar icon.',
+      )
+    }
+    throw e
+  } finally {
+    // Cleared on every path, so a completed request leaves no timer behind to
+    // fire later and keep the worker alive for nothing.
+    clearTimeout(deadline)
   }
 
-  const body = (await res.json()) as QuillBotResponse
   const raw = body.data?.raw
   if (typeof raw !== 'string' || !raw.trim()) {
     throw new Error(
