@@ -104,11 +104,22 @@ untrusted, so driving the button from devtools needs a real input event
 
 ### Never create WhatsApp's storage either
 
+Both of WhatsApp's stores have an API that reads and an API that creates, and the
+creating one is the obvious-looking one. Neither is used.
+
 `indexedDB.open(name)` with no version *creates* a database that is not there, so
 `voice-media.ts` checks `indexedDB.databases()` before opening and aborts the
 version-change transaction if `onupgradeneeded` fires anyway. Planting an empty
 `model-storage` in front of WhatsApp's own is the same intrusion as clearing one.
 Do not drop either guard on the grounds that the database "is always there".
+
+`caches.open(name)` creates a missing cache in exactly the same way — measured in
+a browser: after `caches.open('x')` the name is in `caches.keys()`, while
+`caches.match(url, { cacheName: 'x' })` on a missing cache resolves `undefined`
+and leaves `caches.keys()` empty. So the clip is read with `caches.match` and its
+`cacheName` option, never by opening the cache first. `loadClipBase64`'s tests
+stub `caches.open` to throw, so reintroducing it fails the suite rather than
+quietly planting an empty `lru-media-array-buffer-cache` on web.whatsapp.com.
 
 ### Locale-neutral selectors, English as fallback
 

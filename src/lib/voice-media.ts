@@ -14,8 +14,8 @@
  * work. WhatsApp auto-downloads incoming voice notes, decrypts them in the page,
  * and parks the **plaintext** in Cache Storage:
  *
- *   caches.open('lru-media-array-buffer-cache')
- *     .match('https://_media_cache_v2_.whatsapp.com/lru-media-array-buffer-cache_<filehash>')
+ *   caches.match('https://_media_cache_v2_.whatsapp.com/lru-media-array-buffer-cache_<filehash>',
+ *                 { cacheName: 'lru-media-array-buffer-cache' })
  *
  * `<filehash>` is the message's own `filehash` field, URL-encoded — the SHA-256
  * of the decrypted file, which is exactly what makes it a safe key: read the
@@ -168,8 +168,13 @@ function toBase64(bytes: Uint8Array): string {
  * discovered later by reading a transcript that does not match what you hear.
  */
 export async function loadClipBase64(filehash: string): Promise<string> {
-  const cache = await caches.open(MEDIA_CACHE)
-  const hit = await cache.match(cacheKeyFor(filehash))
+  // `caches.match(..., { cacheName })` rather than `caches.open(MEDIA_CACHE)`:
+  // `open` *creates* a cache that is not there, exactly as `indexedDB.open` does,
+  // so it would plant an empty `lru-media-array-buffer-cache` on
+  // web.whatsapp.com whenever WhatsApp had not made one yet. Same intrusion as
+  // creating its database, and this form reads without writing — a missing cache
+  // simply misses.
+  const hit = await caches.match(cacheKeyFor(filehash), { cacheName: MEDIA_CACHE })
   if (!hit) {
     throw new ClipUnavailable(
       'WhatsApp hasn’t downloaded this clip on this device yet. Download or play it ' +
