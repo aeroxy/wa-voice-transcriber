@@ -51,8 +51,8 @@ notes, decrypts them in the page, and parks the plaintext Ogg/Opus in Cache
 Storage:
 
 ```text
-caches.open('lru-media-array-buffer-cache')
-  .match('https://_media_cache_v2_.whatsapp.com/lru-media-array-buffer-cache_<filehash>')
+caches.match('https://_media_cache_v2_.whatsapp.com/lru-media-array-buffer-cache_<filehash>',
+             { cacheName: 'lru-media-array-buffer-cache' })
 ```
 
 `<filehash>` is the message's own `filehash` field, URL-encoded — the SHA-256 of
