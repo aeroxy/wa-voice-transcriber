@@ -15,10 +15,19 @@
 
 ## Why
 
-WhatsApp ships voice-message transcription, but only for some accounts, some
-languages and some regions — and where it is absent it is *silently* absent.
-There is no control to press and no error to retry. This adds one, and when it
-cannot transcribe a clip it says why.
+Voice notes are tedious to sit through, and WhatsApp Web gives you no way out of
+listening: every voice-note bubble inspected while building this carried a
+player, a duration and a speed control, and nothing else. No transcript, and
+nothing to press to get one.
+
+So the extension adds one, and when it cannot transcribe a clip it says why.
+
+WhatsApp does have voice-message transcripts, but they are a *phone* feature: per
+[WhatsApp's FAQ](https://faq.whatsapp.com/), you turn them on in the mobile app
+under Settings → Chats → Voice message transcripts, transcription runs on-device,
+it is off by default, and which languages work depends on the phone's OS. There
+is nothing to switch on in the browser. Whether a transcript made on the phone
+then shows up on Web is not something this repo has tested.
 
 It works on any voice note whose audio WhatsApp has already cached on this device
 and whose player this extension recognises in the page. Both caveats are real and

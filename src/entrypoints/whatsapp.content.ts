@@ -6,11 +6,10 @@ import type { Request, TranscribeResult } from '@/types/messages'
 /**
  * Puts a working Transcribe control on every voice message in a thread.
  *
- * WhatsApp ships its own transcription, but only for some accounts, some
- * languages and some regions, and it is silently absent otherwise — there is no
- * control to press and no error to retry. This adds one that always works,
- * reading the clip WhatsApp has already downloaded and decrypted rather than
- * asking WhatsApp to transcribe it.
+ * Every voice-note bubble inspected while building this carried a player, a
+ * duration and a speed control, and nothing else — no transcript and no control
+ * to produce one. This reads the clip WhatsApp has already downloaded and
+ * decrypted, and transcribes it independently.
  */
 
 const STYLE_ID = 'wavt-styles'
