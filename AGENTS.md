@@ -137,6 +137,24 @@ block's `data-wavt-id` against the row's current `data-id` and remounts on a
 mismatch. Asking only "is a block already here?" is what lets a recycled row keep
 another message's transcript, with nothing able to detect it.
 
+### The request deadline is a setting
+
+`transcribe` takes `timeoutMs` and enforces it with an `AbortController`, over
+both the fetch *and* the body read — a response that never finishes arriving
+hangs as thoroughly as one that never starts. The timer is cleared in a `finally`
+so a completed request leaves nothing behind to fire later.
+
+A `timedOut` flag decides whether to report a timeout, rather than sniffing for
+`AbortError`. Only our own abort should be relabelled; a foreign one keeps its
+message. `src/lib/quillbot.test.ts` pins that distinction.
+
+It is configurable because no constant works: a three-second note answers in
+about a second, while a fifteen-minute one is a megabyte of Opus to upload and
+recognise. Any default low enough to fail fast on a stalled request is too low
+for somebody's long clips. `clampTimeout` is total — every unusable stored value
+becomes the default or the nearest bound — because a bad value would otherwise
+hang forever or abort instantly.
+
 ### Speech-to-text
 
 `https://quillbot.com/api/raven/stt/process-recording`, posted from the service

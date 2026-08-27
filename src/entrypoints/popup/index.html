@@ -11,6 +11,20 @@
 
     <p class="count" id="count">Counting cached transcripts…</p>
 
+    <div class="field">
+      <label for="timeout">Transcription timeout</label>
+      <div class="row">
+        <input id="timeout" type="number" min="10" max="600" step="5" inputmode="numeric" />
+        <span class="unit">seconds</span>
+      </div>
+      <p class="note">
+        Long voice notes need longer. Raise this if transcription times out;
+        lower it if a stalled request should give up sooner.
+      </p>
+    </div>
+
+    <hr />
+
     <button id="clear" class="danger" disabled>Clear all transcripts</button>
     <p class="note">
       Removes only this extension's cached transcripts. WhatsApp's own messages

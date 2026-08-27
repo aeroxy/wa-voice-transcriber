@@ -1,7 +1,6 @@
 /// <reference types="bun" />
 import { describe, expect, test } from 'bun:test'
 import { cacheKeyFor, keyMatchesMessageId } from './voice-media'
-import { splitLocale } from './quillbot'
 
 /**
  * The two joins that connect a bubble in the DOM to bytes on disk. Both are
@@ -54,20 +53,5 @@ describe('cacheKeyFor', () => {
 
   test('escapes every base64 character that needs it', () => {
     expect(cacheKeyFor('a+b/c=')).toEndWith('a%2Bb%2Fc%3D')
-  })
-})
-
-describe('splitLocale', () => {
-  test('splits a language tag', () => {
-    expect(splitLocale('en-GB')).toEqual({ language: 'en', dialect: 'GB' })
-  })
-
-  test('defaults the dialect when the tag carries no region', () => {
-    expect(splitLocale('de')).toEqual({ language: 'de', dialect: 'US' })
-  })
-
-  test('falls back entirely on something unusable', () => {
-    expect(splitLocale(undefined)).toEqual({ language: 'en', dialect: 'US' })
-    expect(splitLocale('')).toEqual({ language: 'en', dialect: 'US' })
   })
 })
